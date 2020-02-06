@@ -3,6 +3,16 @@ import pygame
 import pygame.draw
 import numpy
 
+from array import *
+import time, sys
+import random
+
+# My imports
+from satutils import *
+from sattypes import *
+from satheapq import *
+from prettyPrinter import *
+
 __screenSize__ = (635,635)
 __cellSize__ = 70
 __gridDim__ = tuple(map(lambda x: int(x/__cellSize__), __screenSize__))
@@ -132,30 +142,6 @@ class Scene:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-from array import *
-import time, sys
-import random
-import numpy as np
-
-# My imports
-from satutils import *
-from sattypes import *
-from satheapq import *
-from prettyPrinter import *
 
 class Solver():
     ''' Some function names are taken from the Minisat interface '''
@@ -596,7 +582,7 @@ if __name__ == "__main__":
 
     
     # generate a random number of clauses
-    num_clauses = random.randint(0, 4)
+    num_clauses = random.randint(1, 3)
 
     solution = False
 
