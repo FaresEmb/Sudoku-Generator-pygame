@@ -118,17 +118,6 @@ class Scene:
                 #pygame.display.update()
                 
 
-    def drawPath(self, path_array):
-        if self._grid._grid is None:
-            print("aie")
-            return
-        self._screen.fill((128,128,128))
-        for x in range(__gridDim__[0]):
-            for y in range(__gridDim__[1]):
-                pygame.draw.rect(self._screen, 
-                        (125,70,125),
-                        (x*__cellSize__ + 1, y*__cellSize__ + 1, __cellSize__-2, __cellSize__-2))
-
 
     def drawText(self, text, position, color = (255,64,64)):
         self._screen.blit(self._font.render(text,1,color),position)
@@ -136,132 +125,8 @@ class Scene:
     def update(self):
         pass
 
-    def eventClic(self,coord,b): # ICI METTRE UN A* EN TEMPS REEL b?
+    
 
-        # variable initialization clic by clic
-        if self._first_clic == (-1,-1):
-            self._first_clic = (int(coord[0] / __cellSize__), int(coord[1] / __cellSize__))
-        elif self._second_clic == (-1,-1):
-            self._second_clic = (int(coord[0] / __cellSize__), int(coord[1] / __cellSize__))
-        
-        print(self._first_clic)
-        print(self._second_clic)
-
-        # A*
-        # les deux clics sont définit
-        if self._first_clic != (-1,-1) and self._second_clic != (-1,-1):
-            listeOuvert = []
-            listeFermer = []
-
-
-            # Create start and end node
-            start_node = Node(None, self._first_clic)
-            start_node.g = start_node.h = start_node.f = 0
-            end_node = Node(None, self._second_clic)
-            end_node.g = end_node.h = end_node.f = 0
-            # g: distance between the current node and the start node
-            # h: heuristic --> estimated distance from the current node to the end node
-            # f: total cost of the node f=g+h
-
-            listeOuvert.append(start_node)
-            
-
-            while len(listeOuvert) > 0:
-
-                # Get the current node
-                current_node = listeOuvert[0]
-                current_index = 0
-
-                # look for the most optimal node
-                for index, item in enumerate(listeOuvert):
-                    # cherche le plus optimal
-                    if item.f < current_node.f:
-                        current_node = item
-                        current_index = index
-
-                # pop the optimal node and add it to the closed list
-                listeOuvert.pop(current_index)
-                listeFermer.append(current_node)
-
-                print("fermer : " + str(len(listeFermer)))
-                print("ouvert : " + str(len(listeOuvert)))
-
-                # Trouver le dernier noeud
-                if current_node.position == end_node.position:
-                    path = []
-                    current = current_node
-                    listeOuvert = []
-                    while current is not None:
-                        path.append(current.position)
-                        current = current.parent
-                    print(path[::-1])
-                    return path[::-1]
-                
-
-                # Teste les positions adjacentes d'une case
-                children = []
-                for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0) ]: 
-                    # get a posssible node move
-                    node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
-                    
-                    # stay in the grid
-                    if node_position[0] > (__gridDim__[0] - 1) or node_position[0] < 0 or node_position[1] > (__gridDim__[1] -1) or node_position[1] < 0:
-                        continue
-
-
-                    # Check if the is an obstacle wall
-                    if self._grid._grid[node_position[0],node_position[1]] == 1:
-                        continue
-  
-
-                    # Create new node
-                    new_node = Node(current_node, node_position)
-                    # Append
-                    children.append(new_node)
-
-
-                
-                # Loop through children
-                for child in children:
-
-                    # Child is on the closed list
-                    for closed_child in listeFermer:
-                        if (child.position[0] == closed_child.position[0]) and (child.position[1] == closed_child.position[1]):
-                            print("noooooooooooooo")
-                            continue
-                    
-                    # Create the f, g, and h values
-                    child.g = current_node.g + 1 # distance entre noeud de départ et le courant
-                    # distance entre noeud courant et noeuds d'arrivé
-                    child.h = ((child.position[0] - end_node.position[0]) ** 2) + ((child.position[1] - end_node.position[1]) ** 2)
-                    child.f = child.g + child.h
-
-                    # Child is already in the open list
-                    for open_node in listeOuvert:
-                        if (child.position[0] == open_node.position[0]) and (child.position[1] == open_node.position[1]):
-                            
-                            continue
-                
-
-                    # Add the child to the open list
-                    listeOuvert.append(child)
-
-                    # draw the exploration graph
-                    self._grid.add_path(child.position)
-                
-                self.update()
-                self.drawMe()
-
-
-
-
-
-
-
-
-                            
-
-        pass
     def recordMouseMove(self, coord):
         pass
 
@@ -674,9 +539,6 @@ if __name__ == "__main__":
         scene.update()
         scene.drawMe()
         while done == False:
-            #clock.tick(1)
-            #scene.update()
-            #scene.drawMe()
             if buildingTrack:
                 additionalMessage = ": BUILDING (" + str(int(wallWeight*100)) + "%)"
             pygame.display.flip()
@@ -726,14 +588,55 @@ if __name__ == "__main__":
 
     if len(sys.argv) > 1:
         readFile(solver, sys.argv[1])
-        solver.buildDataStructure()
+        
     else:
         printUsage()
         print("c - Error - Please give me a cnf(.gz) file as input")
         sys.exit(1)
 
+    
+    # generate a random number of clauses
+    num_clauses = random.randint(0, 4)
+
+    solution = False
+
+    # tant que pour les clauses générées on ne trouve pas de solutions
+    while solution == False:
+
+        solver = Solver()
+        readFile(solver, sys.argv[1])
+
+        clauses = []
+        # generate the clauses
+        for i in range(num_clauses):
+            repeated_clause = False
+            # check que l'on ne mette pas des clauses doublons
+            while repeated_clause == False:
+
+                x = random.randint(0, 9)
+                y = random.randint(0, 9)
+                z = random.randint(0, 9)
+                new_clause = x * 100 + y * 10 + z
+
+                if new_clause not in clauses:
+                    clauses.append(new_clause)
+                    repeated_clause = True
+
+
+
+        # add the clauses
+        for clause in clauses:
+            solver.addClause([clause])
+
+        solver.buildDataStructure()
+
+        solver_solution = solver.solve()
+
+        if solver_solution == solver._cst.lit_True:
+            solution = True
+
     # grab a solution
-    final_solution = solver.solve()
+    #final_solution = solver.solve()
     
     # create constraint array
     original_solution = []
@@ -746,12 +649,6 @@ if __name__ == "__main__":
                 all_positive.append(el)
         return all_positive
 
-    def get_all_negative_numbers(tab):
-        all_negative = []
-        for el in tab:
-            if el < 0:
-                all_negative.append(el)
-        return all_negative
 
 
     # we grab all the positives number
@@ -815,33 +712,7 @@ if __name__ == "__main__":
             
        
     
-    
-    """
-    # clauses array
-    clauses = []
-    
-    another_solution = False
-    
-    # iterate the solver until there exists another solution than the existing one
-    while another_solution == False:
-        
-        
-
-        for clause in clauses:
-            solver_another_solution.addClause([clause])
-
-
-        # load the constraint to the solver
-        solution = solver_another_solution.solve()
-
-        # check if a new solution was found
-        if solution == solver_another_solution._cst.lit_False:
-            another_solution = False
-        
-        clauses.append(original_solution_copy.pop())
-    """
-            
-
+   
         
         
 
