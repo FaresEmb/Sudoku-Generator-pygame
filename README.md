@@ -2,7 +2,7 @@
 
 <p align="center" >
    <a href="">
-    <img alt="react-native-gifted-chat" src="https://media.giphy.com/media/QAb8LBD8MMCn5UyNXL/giphy.gif" width="900" height="510" />
+    <img alt="react-native-gifted-chat" src="https://media.giphy.com/media/PkirsH2XFiLrZ3iofH/giphy.gif" width="900" height="510" />
  </a>
 
 </p>
@@ -33,7 +33,7 @@
 
 
 Une brief description de l'algorithme de génération de sodoku : 
-- On place aléatoirement un nombre de chiffre sur une grille et on appel le solveur pour la résoudre (on réitère tant que le solveur n'as pas de solution)
+- On place aléatoirement un nombre de chiffre (par défaut entre 1 et 3 mais il suffit de modifier la variable num_clauses) sur une grille et on appel le solveur pour la résoudre (on réitère tant que le solveur n'as pas de solution)
 - Une fois la solution trouvé, on récupère tous les chiffres positifs du solveur qui représente les coordonnées de la solution
 - On place dans un tableau la négation de la solution
 - On instantie ensuite un nouveau solveur avec une grille au départ vide (sans clauses) qui va regarder s'il existe des solutions (la solution originale est en négation)
